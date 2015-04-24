@@ -1098,7 +1098,7 @@
         queue = new PriorityQueue(4);
         queue.enqueue(si);
 
-        var result = runTrampoline();
+        runTrampoline();
         queue = null;
       } else {
         queue.enqueue(si);
@@ -2622,7 +2622,7 @@
     this.parent.values[i] = x;
     this.parent.hasValue[i] = true;
     if (this.parent.hasValueAll || (this.parent.hasValueAll = this.parent.hasValue.every(identity))) {
-      var res = this.parent.resultSelector(this.parent.values);
+      var res = this.parent.resultSelector.apply(this.parent, this.parent.values);
       this.observer.onNext(res);
     } else if (this.parent.isDone.filter(function (x, j) { return j !== i; }).every(identity)) {
       this.observer.onCompleted();
@@ -4920,7 +4920,7 @@
         hasValue[i] = true;
         if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
           if (err) { return o.onError(err); }
-          var res = resultSelector(values);
+          var res = resultSelector.apply(null, values);
           o.onNext(res);
         }
         isDone && values[1] && o.onCompleted();

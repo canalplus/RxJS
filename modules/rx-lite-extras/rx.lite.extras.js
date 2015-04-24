@@ -94,23 +94,20 @@
 
     CheckedObserverPrototype.onNext = function (value) {
       this.checkAccess();
-      var res = this._observer.onNext(value);
+      this._observer.onNext(value);
       this._state = 0;
-      return res;
     };
 
     CheckedObserverPrototype.onError = function (err) {
       this.checkAccess();
-      var res = this._observer.onError(err);
+      this._observer.onError(err);
       this._state = 2;
-      return res;
     };
 
     CheckedObserverPrototype.onCompleted = function () {
       this.checkAccess();
-      var res = this._observer.onCompleted();
+      this._observer.onCompleted();
       this._state = 2;
-      return res;
     };
 
     CheckedObserverPrototype.checkAccess = function () {

@@ -1151,7 +1151,7 @@
         queue = new PriorityQueue(4);
         queue.enqueue(si);
 
-        var result = runTrampoline();
+        runTrampoline();
         queue = null;
       } else {
         queue.enqueue(si);
@@ -1895,23 +1895,20 @@
 
     CheckedObserverPrototype.onNext = function (value) {
       this.checkAccess();
-      var res = this._observer.onNext(value);
+      this._observer.onNext(value);
       this._state = 0;
-      return res;
     };
 
     CheckedObserverPrototype.onError = function (err) {
       this.checkAccess();
-      var res = this._observer.onError(err);
+      this._observer.onError(err);
       this._state = 2;
-      return res;
     };
 
     CheckedObserverPrototype.onCompleted = function () {
       this.checkAccess();
-      var res = this._observer.onCompleted();
+      this._observer.onCompleted();
       this._state = 2;
-      return res;
     };
 
     CheckedObserverPrototype.checkAccess = function () {
@@ -3082,7 +3079,7 @@
     this.parent.values[i] = x;
     this.parent.hasValue[i] = true;
     if (this.parent.hasValueAll || (this.parent.hasValueAll = this.parent.hasValue.every(identity))) {
-      var res = this.parent.resultSelector(this.parent.values);
+      var res = this.parent.resultSelector.apply(this.parent, this.parent.values);
       this.observer.onNext(res);
     } else if (this.parent.isDone.filter(function (x, j) { return j !== i; }).every(identity)) {
       this.observer.onCompleted();
