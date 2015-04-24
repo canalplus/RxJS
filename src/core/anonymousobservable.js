@@ -9,11 +9,7 @@
 
     function setDisposable(s, state) {
       var ado = state[0], subscribe = state[1];
-      var sub = tryCatch(subscribe)(ado);
-
-      if (sub === errorObj) {
-        if(!ado.fail(errorObj.e)) { return thrower(errorObj.e); }
-      }
+      var sub = subscribe(ado);
       ado.setDisposable(fixSubscriber(sub));
     }
 

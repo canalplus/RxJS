@@ -42,11 +42,9 @@
     var i = this.i;
     this.parent.queues[i].push(x);
     if (this.parent.queues.every(function (x) { return x.length > 0; })) {
-      var res = tryCatch(this.parent.resultSelector).apply(
-        this.parent,
+      var res = this.parent.resultSelector(
         this.parent.queues.map(function (x) { return x.shift(); })
       );
-      if (res === errorObj) { return this.observer.onError(res.e); }
       this.observer.onNext(res);
     } else if (this.parent.isDone.filter(function (x, j) { return j !== i; }).every(identity)) {
       this.observer.onCompleted();

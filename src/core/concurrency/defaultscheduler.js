@@ -37,10 +37,9 @@
         var task = tasksByHandle[handle];
         if (task) {
           currentlyRunning = true;
-          var result = tryCatch(task)();
+          task();
           clearMethod(handle);
           currentlyRunning = false;
-          if (result === errorObj) { return thrower(result.e); }
         }
       }
     }

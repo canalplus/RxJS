@@ -44,8 +44,7 @@
     this.parent.values[i] = x;
     this.parent.hasValue[i] = true;
     if (this.parent.hasValueAll || (this.parent.hasValueAll = this.parent.hasValue.every(identity))) {
-      var res = tryCatch(this.parent.resultSelector).apply(null, this.parent.values);
-      if (res === errorObj) { return this.observer.onError(res.e); }
+      var res = this.parent.resultSelector(this.parent.values);
       this.observer.onNext(res);
     } else if (this.parent.isDone.filter(function (x, j) { return j !== i; }).every(identity)) {
       this.observer.onCompleted();

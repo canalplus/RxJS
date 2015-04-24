@@ -18,9 +18,8 @@
         queue = new PriorityQueue(4);
         queue.enqueue(si);
 
-        var result = tryCatch(runTrampoline)();
+        var result = runTrampoline();
         queue = null;
-        if (result === errorObj) { return thrower(result.e); }
       } else {
         queue.enqueue(si);
       }

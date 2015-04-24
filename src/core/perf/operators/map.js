@@ -30,10 +30,7 @@
 
   MapObserver.prototype.onNext = function(x) {
     if (this.isStopped) { return; }
-    var result = tryCatch(this.selector).call(this, x, this.i++, this.source);
-    if (result === errorObj) {
-      return this.observer.onError(result.e);
-    }
+    var result = this.selector(x, this.i++, this.source);
     this.observer.onNext(result);
   };
   MapObserver.prototype.onError = function (e) {

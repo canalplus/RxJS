@@ -10,23 +10,17 @@
     var AutoDetachObserverPrototype = AutoDetachObserver.prototype;
 
     AutoDetachObserverPrototype.next = function (value) {
-      var result = tryCatch(this.observer.onNext).call(this.observer, value);
-      if (result === errorObj) {
-        this.dispose();
-        thrower(result.e);
-      }
+      this.observer.onNext(value);
     };
 
     AutoDetachObserverPrototype.error = function (err) {
-      var result = tryCatch(this.observer.onError).call(this.observer, err);
+      this.observer.onError(err);
       this.dispose();
-      result === errorObj && thrower(result.e);
     };
 
     AutoDetachObserverPrototype.completed = function () {
-      var result = tryCatch(this.observer.onCompleted).call(this.observer);
+      this.observer.onCompleted();
       this.dispose();
-      result === errorObj && thrower(result.e);
     };
 
     AutoDetachObserverPrototype.setDisposable = function (value) { this.m.setDisposable(value); };
