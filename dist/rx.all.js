@@ -40,7 +40,7 @@
     defaultSubComparer = Rx.helpers.defaultSubComparer = function (x, y) { return x > y ? 1 : (x < y ? -1 : 0); },
     defaultKeySerializer = Rx.helpers.defaultKeySerializer = function (x) { return x.toString(); },
     defaultError = Rx.helpers.defaultError = function (err) { throw err; },
-    isPromise = Rx.helpers.isPromise = function (p) { return !!p && typeof p.then === 'function'; },
+    isPromise = Rx.helpers.isPromise = function (p) { return !!p && typeof p.subscribe !== 'function' && typeof p.then === 'function'; },
     asArray = Rx.helpers.asArray = function () { return Array.prototype.slice.call(arguments); },
     not = Rx.helpers.not = function (a) { return !a; },
     isFunction = Rx.helpers.isFunction = (function () {
@@ -60,102 +60,6 @@
     }());
 
   function cloneArray(arr) { for(var a = [], i = 0, len = arr.length; i < len; i++) { a.push(arr[i]); } return a;}
-
-  Rx.config.longStackSupport = false;
-  var hasStacks = false;
-  try {
-    throw new Error();
-  } catch (e) {
-    hasStacks = !!e.stack;
-  }
-
-  // All code after this point will be filtered from stack traces reported by RxJS
-  var rStartingLine = captureLine(), rFileName;
-
-  var STACK_JUMP_SEPARATOR = "From previous event:";
-
-  function makeStackTraceLong(error, observable) {
-      // If possible, transform the error stack trace by removing Node and RxJS
-      // cruft, then concatenating with the stack trace of `observable`.
-      if (hasStacks &&
-          observable.stack &&
-          typeof error === "object" &&
-          error !== null &&
-          error.stack &&
-          error.stack.indexOf(STACK_JUMP_SEPARATOR) === -1
-      ) {
-        var stacks = [];
-        for (var o = observable; !!o; o = o.source) {
-          if (o.stack) {
-            stacks.unshift(o.stack);
-          }
-        }
-        stacks.unshift(error.stack);
-
-        var concatedStacks = stacks.join("\n" + STACK_JUMP_SEPARATOR + "\n");
-        error.stack = filterStackString(concatedStacks);
-    }
-  }
-
-  function filterStackString(stackString) {
-    var lines = stackString.split("\n"),
-        desiredLines = [];
-    for (var i = 0, len = lines.length; i < len; i++) {
-      var line = lines[i];
-
-      if (!isInternalFrame(line) && !isNodeFrame(line) && line) {
-        desiredLines.push(line);
-      }
-    }
-    return desiredLines.join("\n");
-  }
-
-  function isInternalFrame(stackLine) {
-    var fileNameAndLineNumber = getFileNameAndLineNumber(stackLine);
-    if (!fileNameAndLineNumber) {
-      return false;
-    }
-    var fileName = fileNameAndLineNumber[0], lineNumber = fileNameAndLineNumber[1];
-
-    return fileName === rFileName &&
-      lineNumber >= rStartingLine &&
-      lineNumber <= rEndingLine;
-  }
-
-  function isNodeFrame(stackLine) {
-    return stackLine.indexOf("(module.js:") !== -1 ||
-      stackLine.indexOf("(node.js:") !== -1;
-  }
-
-  function captureLine() {
-    if (!hasStacks) { return; }
-
-    try {
-      throw new Error();
-    } catch (e) {
-      var lines = e.stack.split("\n");
-      var firstLine = lines[0].indexOf("@") > 0 ? lines[1] : lines[2];
-      var fileNameAndLineNumber = getFileNameAndLineNumber(firstLine);
-      if (!fileNameAndLineNumber) { return; }
-
-      rFileName = fileNameAndLineNumber[0];
-      return fileNameAndLineNumber[1];
-    }
-  }
-
-  function getFileNameAndLineNumber(stackLine) {
-    // Named functions: "at functionName (filename:lineNumber:columnNumber)"
-    var attempt1 = /at .+ \((.+):(\d+):(?:\d+)\)$/.exec(stackLine);
-    if (attempt1) { return [attempt1[1], Number(attempt1[2])]; }
-
-    // Anonymous functions: "at filename:lineNumber:columnNumber"
-    var attempt2 = /at ([^ ]+):(\d+):(?:\d+)$/.exec(stackLine);
-    if (attempt2) { return [attempt2[1], Number(attempt2[2])]; }
-
-    // Firefox style: "function@filename:lineNumber or @filename:lineNumber"
-    var attempt3 = /.*@(.+):(\d+)$/.exec(stackLine);
-    if (attempt3) { return [attempt3[1], Number(attempt3[2])]; }
-  }
 
   var EmptyError = Rx.EmptyError = function() {
     this.message = 'Sequence contains no elements.';
@@ -1247,9 +1151,8 @@
         queue = new PriorityQueue(4);
         queue.enqueue(si);
 
-        var result = tryCatch(runTrampoline)();
+        var result = runTrampoline();
         queue = null;
-        if (result === errorObj) { return thrower(result.e); }
       } else {
         queue.enqueue(si);
       }
@@ -1301,10 +1204,9 @@
         var task = tasksByHandle[handle];
         if (task) {
           currentlyRunning = true;
-          var result = tryCatch(task)();
+          task();
           clearMethod(handle);
           currentlyRunning = false;
-          if (result === errorObj) { return thrower(result.e); }
         }
       }
     }
@@ -1993,23 +1895,23 @@
 
     CheckedObserverPrototype.onNext = function (value) {
       this.checkAccess();
-      var res = tryCatch(this._observer.onNext).call(this._observer, value);
+      var res = this._observer.onNext(value);
       this._state = 0;
-      res === errorObj && thrower(res.e);
+      return res;
     };
 
     CheckedObserverPrototype.onError = function (err) {
       this.checkAccess();
-      var res = tryCatch(this._observer.onError).call(this._observer, err);
+      var res = this._observer.onError(err);
       this._state = 2;
-      res === errorObj && thrower(res.e);
+      return res;
     };
 
     CheckedObserverPrototype.onCompleted = function () {
       this.checkAccess();
-      var res = tryCatch(this._observer.onCompleted).call(this._observer);
+      var res = this._observer.onCompleted();
       this._state = 2;
-      res === errorObj && thrower(res.e);
+      return res;
     };
 
     CheckedObserverPrototype.checkAccess = function () {
@@ -2124,27 +2026,7 @@
   var Observable = Rx.Observable = (function () {
 
     function Observable(subscribe) {
-      if (Rx.config.longStackSupport && hasStacks) {
-        try {
-          throw new Error();
-        } catch (e) {
-          this.stack = e.stack.substring(e.stack.indexOf("\n") + 1);
-        }
-
-        var self = this;
-        this._subscribe = function (observer) {
-          var oldOnError = observer.onError.bind(observer);
-
-          observer.onError = function (err) {
-            makeStackTraceLong(err, self);
-            oldOnError(err);
-          };
-
-          return subscribe.call(self, observer);
-        };
-      } else {
-        this._subscribe = subscribe;
-      }
+      this._subscribe = subscribe;
     }
 
     observableProto = Observable.prototype;
@@ -2205,11 +2087,7 @@
 
     function setDisposable(s, state) {
       var ado = state[0], self = state[1];
-      var sub = tryCatch(self.subscribeCore).call(self, ado);
-
-      if (sub === errorObj) {
-        if(!ado.fail(errorObj.e)) { return thrower(errorObj.e); }
-      }
+      var sub = self.subscribeCore(ado);
       ado.setDisposable(fixSubscriber(sub));
     }
 
@@ -3250,8 +3128,7 @@
     this.parent.values[i] = x;
     this.parent.hasValue[i] = true;
     if (this.parent.hasValueAll || (this.parent.hasValueAll = this.parent.hasValue.every(identity))) {
-      var res = tryCatch(this.parent.resultSelector).apply(null, this.parent.values);
-      if (res === errorObj) { return this.observer.onError(res.e); }
+      var res = this.parent.resultSelector(this.parent.values);
       this.observer.onNext(res);
     } else if (this.parent.isDone.filter(function (x, j) { return j !== i; }).every(identity)) {
       this.observer.onCompleted();
@@ -4777,10 +4654,7 @@
 
   MapObserver.prototype.onNext = function(x) {
     if (this.isStopped) { return; }
-    var result = tryCatch(this.selector).call(this, x, this.i++, this.source);
-    if (result === errorObj) {
-      return this.observer.onError(result.e);
-    }
+    var result = this.selector(x, this.i++, this.source);
     this.observer.onNext(result);
   };
   MapObserver.prototype.onError = function (e) {
@@ -5081,10 +4955,7 @@
 
   FilterObserver.prototype.onNext = function(x) {
     if (this.isStopped) { return; }
-    var shouldYield = tryCatch(this.predicate).call(this, x, this.i++, this.source);
-    if (shouldYield === errorObj) {
-      return this.observer.onError(shouldYield.e);
-    }
+    var shouldYield = this.predicate(x, this.i++, this.source);
     shouldYield && this.observer.onNext(x);
   };
   FilterObserver.prototype.onError = function (e) {
@@ -6365,8 +6236,7 @@
         hasValue[i] = true;
         if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
           if (err) { return o.onError(err); }
-          var res = tryCatch(resultSelector).apply(null, values);
-          if (res === errorObj) { return o.onError(res.e); }
+          var res = resultSelector(values);
           o.onNext(res);
         }
         isDone && values[1] && o.onCompleted();
@@ -8197,7 +8067,7 @@
    * @param {Object} scheduler Scheduler used to execute the operation. If not specified, defaults to the ImmediateScheduler.
    * @returns {Observable} An observable sequence which results from the comonadic bind operation.
    */
-  observableProto.manySelect = function (selector, scheduler) {
+  observableProto.manySelect = observableProto.extend = function (selector, scheduler) {
     isScheduler(scheduler) || (scheduler = immediateScheduler);
     var source = this;
     return observableDefer(function () {
@@ -9221,8 +9091,7 @@
       function start() {
         subscription.setDisposable(source.subscribe(
           function (x) {
-            var delay = tryCatch(selector)(x);
-            if (delay === errorObj) { return observer.onError(delay.e); }
+            var delay = selector(x);
             var d = new SingleAssignmentDisposable();
             delays.add(d);
             d.setDisposable(delay.subscribe(
@@ -10036,11 +9905,7 @@
 
     function setDisposable(s, state) {
       var ado = state[0], subscribe = state[1];
-      var sub = tryCatch(subscribe)(ado);
-
-      if (sub === errorObj) {
-        if(!ado.fail(errorObj.e)) { return thrower(errorObj.e); }
-      }
+      var sub = subscribe(ado);
       ado.setDisposable(fixSubscriber(sub));
     }
 
@@ -10077,23 +9942,17 @@
     var AutoDetachObserverPrototype = AutoDetachObserver.prototype;
 
     AutoDetachObserverPrototype.next = function (value) {
-      var result = tryCatch(this.observer.onNext).call(this.observer, value);
-      if (result === errorObj) {
-        this.dispose();
-        thrower(result.e);
-      }
+      this.observer.onNext(value);
     };
 
     AutoDetachObserverPrototype.error = function (err) {
-      var result = tryCatch(this.observer.onError).call(this.observer, err);
+      this.observer.onError(err);
       this.dispose();
-      result === errorObj && thrower(result.e);
     };
 
     AutoDetachObserverPrototype.completed = function () {
-      var result = tryCatch(this.observer.onCompleted).call(this.observer);
+      this.observer.onCompleted();
       this.dispose();
-      result === errorObj && thrower(result.e);
     };
 
     AutoDetachObserverPrototype.setDisposable = function (value) { this.m.setDisposable(value); };
@@ -10416,8 +10275,5 @@
     // in a browser or Rhino
     root.Rx = Rx;
   }
-
-  // All code before this point will be filtered from stack traces.
-  var rEndingLine = captureLine();
 
 }.call(this));

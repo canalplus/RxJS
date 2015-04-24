@@ -165,8 +165,7 @@
         hasValue[i] = true;
         if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
           if (err) { return o.onError(err); }
-          var res = tryCatch(resultSelector).apply(null, values);
-          if (res === errorObj) { return o.onError(res.e); }
+          var res = resultSelector(values);
           o.onNext(res);
         }
         isDone && values[1] && o.onCompleted();

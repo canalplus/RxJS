@@ -431,8 +431,7 @@
       function start() {
         subscription.setDisposable(source.subscribe(
           function (x) {
-            var delay = tryCatch(selector)(x);
-            if (delay === errorObj) { return observer.onError(delay.e); }
+            var delay = selector(x);
             var d = new SingleAssignmentDisposable();
             delays.add(d);
             d.setDisposable(delay.subscribe(
