@@ -18,7 +18,7 @@
         queue = new PriorityQueue(4);
         queue.enqueue(si);
 
-        var result = runTrampoline();
+        runTrampoline();
         queue = null;
       } else {
         queue.enqueue(si);

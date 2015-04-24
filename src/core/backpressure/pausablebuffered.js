@@ -11,7 +11,7 @@
         hasValue[i] = true;
         if (hasValueAll || (hasValueAll = hasValue.every(identity))) {
           if (err) { return o.onError(err); }
-          var res = resultSelector(values);
+          var res = resultSelector.apply(null, values);
           o.onNext(res);
         }
         isDone && values[1] && o.onCompleted();

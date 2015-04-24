@@ -42,7 +42,8 @@
     var i = this.i;
     this.parent.queues[i].push(x);
     if (this.parent.queues.every(function (x) { return x.length > 0; })) {
-      var res = this.parent.resultSelector(
+      var res = this.parent.resultSelector.apply(
+        this.parent,
         this.parent.queues.map(function (x) { return x.shift(); })
       );
       this.observer.onNext(res);
