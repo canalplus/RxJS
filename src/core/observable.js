@@ -6,27 +6,7 @@
   var Observable = Rx.Observable = (function () {
 
     function Observable(subscribe) {
-      if (Rx.config.longStackSupport && hasStacks) {
-        try {
-          throw new Error();
-        } catch (e) {
-          this.stack = e.stack.substring(e.stack.indexOf("\n") + 1);
-        }
-
-        var self = this;
-        this._subscribe = function (observer) {
-          var oldOnError = observer.onError.bind(observer);
-
-          observer.onError = function (err) {
-            makeStackTraceLong(err, self);
-            oldOnError(err);
-          };
-
-          return subscribe.call(self, observer);
-        };
-      } else {
-        this._subscribe = subscribe;
-      }
+      this._subscribe = subscribe;
     }
 
     observableProto = Observable.prototype;

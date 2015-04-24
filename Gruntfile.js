@@ -24,10 +24,6 @@ module.exports = function (grunt) {
               'src/core/headers/intro.js',
               'src/core/headers/basicheader.js',
 
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
-
               'src/core/internal/errors.js',
 
               'src/core/headers/enumeratorheader.js',
@@ -306,9 +302,6 @@ module.exports = function (grunt) {
               'src/core/backpressure/pauser.js',
               'src/core/headers/exports.js',
 
-              // Long stacktrace end
-              'src/core/longstacktraces/longstackend.js',
-
               'src/core/headers/outro.js',
             ],
             dest: 'dist/rx.all.js'
@@ -318,10 +311,6 @@ module.exports = function (grunt) {
               'src/core/headers/license.js',
               'src/core/headers/intro.js',
               'src/core/headers/basicheader-compat.js',
-
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
 
               'src/core/internal/errors.js',
 
@@ -599,9 +588,6 @@ module.exports = function (grunt) {
               'src/core/backpressure/pauser.js',
               'src/core/headers/exports.js',
 
-              // End long stack traces
-              'src/core/longstacktraces/longstackend.js',
-
               'src/core/headers/outro.js',
             ],
             dest: 'dist/rx.all.compat.js'
@@ -611,10 +597,6 @@ module.exports = function (grunt) {
               'src/core/headers/license.js',
               'src/core/headers/intro.js',
               'src/core/headers/basicheader.js',
-
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
 
               'src/core/internal/errors.js',
 
@@ -748,9 +730,6 @@ module.exports = function (grunt) {
               'src/core/subjects/anonymoussubject.js',
               'src/core/headers/exports.js',
 
-              // Long stack trace end
-              'src/core/longstacktraces/longstackend.js',
-
               'src/core/headers/outro.js',
             ],
             dest: 'dist/rx.js'
@@ -760,10 +739,6 @@ module.exports = function (grunt) {
               'src/core/headers/license.js',
               'src/core/headers/intro.js',
               'src/core/headers/basicheader-compat.js',
-
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
 
               'src/core/internal/errors.js',
 
@@ -897,7 +872,6 @@ module.exports = function (grunt) {
               'src/core/subjects/anonymoussubject.js',
               'src/core/headers/exports.js',
 
-              'src/core/longstacktraces/longstackend.js',
 
               'src/core/headers/outro.js',
             ],
@@ -908,10 +882,6 @@ module.exports = function (grunt) {
               'src/core/headers/license.js',
               'src/core/headers/intro.js',
               'src/core/headers/liteheader.js',
-
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
 
               'src/core/internal/errors.js',
 
@@ -1065,9 +1035,6 @@ module.exports = function (grunt) {
 
               'src/core/headers/exports.js',
 
-              // End long stack traces
-              'src/core/longstacktraces/longstackend.js',
-
               'src/core/headers/outro.js',
             ],
             dest: 'dist/rx.lite.js'
@@ -1077,10 +1044,6 @@ module.exports = function (grunt) {
               'src/core/headers/license.js',
               'src/core/headers/intro.js',
               'src/core/headers/liteheader-compat.js',
-
-              // Stack trace start
-              'src/core/longstacktraces/longstackbegin.js',
-              'src/core/longstacktraces/longstacktraces.js',
 
               'src/core/internal/errors.js',
 
@@ -1234,9 +1197,6 @@ module.exports = function (grunt) {
               'src/core/backpressure/pauser.js',
 
               'src/core/headers/exports.js',
-
-              // End long stack traces
-              'src/core/longstacktraces/longstackend.js',
 
               'src/core/headers/outro.js',
             ],
